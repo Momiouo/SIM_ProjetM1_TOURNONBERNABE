@@ -44,7 +44,7 @@ Viewer::~Viewer() {
 }
 
 void Viewer::createTextures() {
-  QImage image;
+  QImage image, texture_neige, texture_eau;
 
   // enable the use of 2D textures
   glEnable(GL_TEXTURE_2D);
@@ -53,7 +53,7 @@ void Viewer::createTextures() {
   glGenTextures(4,_texIds);
 
   // load an image (CPU side)
-  image = QGLWidget::convertToGLFormat(QImage("textures/chesterfield-color.png"));
+  image = QGLWidget::convertToGLFormat(QImage("textures/grass_text.jpg"));
 
   // activate this texture (the current one)
   glBindTexture(GL_TEXTURE_2D,_texIds[0]);
@@ -70,10 +70,42 @@ void Viewer::createTextures() {
 
   // generate mipmaps
   glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture enneigée 
+  texture_neige = QGLWidget::convertToGLFormat(QImage("textures/snow_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_neige.width(),texture_neige.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_neige.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture eau 
+  texture_eau = QGLWidget::convertToGLFormat(QImage("textures/water_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[2]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_eau.width(),texture_eau.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_eau.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void Viewer::deleteTextures() {
   glDeleteTextures(1,_texIds);
+  glDeleteTextures(2,_texIds);
+  glDeleteTextures(3,_texIds);
 }
 
 void Viewer::createVAO() {
@@ -84,7 +116,7 @@ void Viewer::createVAO() {
 
   // create the VBO associated with the grid (the terrain)
   glBindVertexArray(_vaoTerrain);
-  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); // vertices 
+  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); //Vertices 
   glBufferData(GL_ARRAY_BUFFER,_grid->nbVertices()*3*sizeof(float),_grid->vertices(),GL_STATIC_DRAW);
   glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void *)0);
 
@@ -102,9 +134,6 @@ void Viewer::createShaders() {
   _terrainShader = new Shader();
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
 
-//*** Our own Shader (Same as TP5) ***
-//_vertexFilenames.push_back("shaders/phong.vert");
-//_fragmentFilenames.push_back("shaders/phong.frag");
 }
 
 void Viewer::deleteShaders() {
@@ -132,8 +161,22 @@ void Viewer::drawScene(GLuint id) {
   glBindVertexArray(_vaoTerrain);
   glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
   glBindVertexArray(0);
+
+  //draw textures
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+  glUniform1i(glGetUniformLocation(id,"testMap"),0);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]);
+  glUniform1i(glGetUniformLocation(id,"snowMap"),1);
+
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D,_texIds[2]);
+  glUniform1i(glGetUniformLocation(id,"lakeMap"),2);
 }
 
+/*
 void Viewer::enableShader(unsigned int shader) {
   // current shader ID
   GLuint id = _shaders[shader]->id();
@@ -154,11 +197,17 @@ void Viewer::enableShader(unsigned int shader) {
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
 
   // send textures
+  /*
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,_texIds[0]);
-  glUniform1i(glGetUniformLocation(id,"colormap"),0);
+  glUniform1i(glGetUniformLocation(id,"testMap"),0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]);
+  glUniform1i(glGetUniformLocation(id,"snowMap"),0);
 
 }
+*/
 
 
 void Viewer::disableShader() {

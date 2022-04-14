@@ -15,6 +15,7 @@ out vec3 normalView;
 out vec3 eyeView;
 //textures
 out vec2 uvcoord;
+out float h;
 
 // fonctions utiles pour créer des terrains en général
 //Genere un nombre aleatoire
@@ -77,7 +78,6 @@ float computeHeight(in vec2 p) {
 
 }
 
-
 vec3 computeNormal(in vec2 p) {
   const float EPS = 0.01;
   const float SCALE = 1.;
@@ -93,10 +93,10 @@ vec3 computeNormal(in vec2 p) {
 }
 
 void main() {
-  //for textures (number of points):
+  //for textures (number of points (more points you have/ more texture you have)):
   uvcoord = position.xy*100.0;
 
-  float h = computeHeight(position.xy);
+  h = computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
   
   vec3 p = vec3(position.xy,h);
