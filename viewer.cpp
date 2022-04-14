@@ -6,9 +6,18 @@
 
 using namespace std;
 
+/**
+ * Possible Todo : Change the camera ! (TP2 => lookat et perspective fct
+ * (les rappelez à chaque rendu si on veut avancer ou ...))
+ * Virer la trackball de base => terrain sur x-> y -top> -1,0,2 up de la camera = z donc 0,0,1
+ * lookat(0,1,2 / 0,1,1 / 0,0,1) = Matrice mdv mat du shader
+ * 
+ */
+
 Viewer::Viewer(char *,const QGLFormat &format)
   : QGLWidget(format),
     _timer(new QTimer(this)),
+    _currentshader(0),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
     _mode(false),
@@ -31,6 +40,40 @@ Viewer::~Viewer() {
   // delete all GPU objects
   deleteShaders();
   deleteVAO(); 
+  deleteTextures();
+}
+
+void Viewer::createTextures() {
+  QImage image;
+
+  // enable the use of 2D textures
+  glEnable(GL_TEXTURE_2D);
+
+  // create three textures (possible) on the GPU
+  glGenTextures(4,_texIds);
+
+  // load an image (CPU side)
+  image = QGLWidget::convertToGLFormat(QImage("textures/chesterfield-color.png"));
+
+  // activate this texture (the current one)
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+
+  // set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+
+  // transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,image.width(),image.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)image.bits());
+
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void Viewer::deleteTextures() {
+  glDeleteTextures(1,_texIds);
 }
 
 void Viewer::createVAO() {
@@ -44,6 +87,7 @@ void Viewer::createVAO() {
   glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); // vertices 
   glBufferData(GL_ARRAY_BUFFER,_grid->nbVertices()*3*sizeof(float),_grid->vertices(),GL_STATIC_DRAW);
   glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void *)0);
+
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,_terrain[1]); // indices 
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,_grid->nbFaces()*3*sizeof(int),_grid->faces(),GL_STATIC_DRAW); 
@@ -56,8 +100,11 @@ void Viewer::deleteVAO() {
 
 void Viewer::createShaders() {
   _terrainShader = new Shader();
-  
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
+
+//*** Our own Shader (Same as TP5) ***
+//_vertexFilenames.push_back("shaders/phong.vert");
+//_fragmentFilenames.push_back("shaders/phong.frag");
 }
 
 void Viewer::deleteShaders() {
@@ -87,6 +134,38 @@ void Viewer::drawScene(GLuint id) {
   glBindVertexArray(0);
 }
 
+void Viewer::enableShader(unsigned int shader) {
+  // current shader ID
+  GLuint id = _shaders[shader]->id();
+
+  // activate the current shader
+  glUseProgram(id);
+
+  // send the model-view matrix
+  glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
+
+  // send the projection matrix
+  glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
+
+  // send the normal matrix (top-left 3x3 transpose(inverse(MDV)))
+  glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
+
+  // send a light direction (defined in camera space)
+  glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
+
+  // send textures
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+  glUniform1i(glGetUniformLocation(id,"colormap"),0);
+
+}
+
+
+void Viewer::disableShader() {
+  // desactivate all shaders
+  glUseProgram(0);
+}
+
 void Viewer::paintGL() {
   
   // allow opengl depth test 
@@ -100,6 +179,9 @@ void Viewer::paintGL() {
 
   // activate the buffer shader 
   glUseProgram(_terrainShader->id());
+
+  // tell the GPU to use this specified shader and send custom variables (matrices and others)
+  enableShader(_currentshader);
 
   // generate the map
   drawScene(_terrainShader->id());
@@ -241,8 +323,16 @@ void Viewer::initializeGL() {
   // init shaders 
   createShaders();
 
+  // init and load all shader files
+  for(unsigned int i=0;i<_vertexFilenames.size();++i) {
+    _shaders.push_back(new Shader());
+    _shaders[i]->load(_vertexFilenames[i].c_str(),_fragmentFilenames[i].c_str());
+  }
+
   // init VAO/VBO
   createVAO();
+  //Create the textures
+  createTextures();
 
   // starts the timer 
   //_timer->start();
