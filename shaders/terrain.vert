@@ -51,13 +51,17 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
 float computeHeight(in vec2 p) {
   
   // version plan
-  return 0.0;
+  //return 0.0;
   
   // version sinus statique
   //return 0.5*sin(p.x*10);
 
   // version sinus animé 
   //return 0.2*sin((p.x+motion.x)*30);
+
+  //version pnoise
+  return max(pnoise(p, 0.9, 0.7, 0.5, 10),-0.2);
+
 }
 
 
