@@ -181,7 +181,7 @@ void Viewer::paintGL() {
   glUseProgram(_terrainShader->id());
 
   // tell the GPU to use this specified shader and send custom variables (matrices and others)
-  enableShader(_currentshader);
+  //enableShader(_currentshader);
 
   // generate the map
   drawScene(_terrainShader->id());
@@ -324,10 +324,10 @@ void Viewer::initializeGL() {
   createShaders();
 
   // init and load all shader files
-  for(unsigned int i=0;i<_vertexFilenames.size();++i) {
-    _shaders.push_back(new Shader());
-    _shaders[i]->load(_vertexFilenames[i].c_str(),_fragmentFilenames[i].c_str());
-  }
+  //for(unsigned int i=0;i<_vertexFilenames.size();++i) {
+  //  _shaders.push_back(new Shader());
+  //  _shaders[i]->load(_vertexFilenames[i].c_str(),_fragmentFilenames[i].c_str());
+  //}
 
   // init VAO/VBO
   createVAO();

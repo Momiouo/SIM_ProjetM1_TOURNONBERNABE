@@ -93,8 +93,8 @@ vec3 computeNormal(in vec2 p) {
 }
 
 void main() {
-  //for textures:
-  uvcoord = position.xy*10.0;
+  //for textures (number of points):
+  uvcoord = position.xy*100.0;
 
   float h = computeHeight(position.xy);
   vec3  n = computeNormal(position.xy);
