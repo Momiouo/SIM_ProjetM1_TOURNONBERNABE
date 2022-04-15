@@ -16,6 +16,8 @@ out vec3 eyeView;
 //textures
 out vec2 uvcoord;
 out float h;
+out float hWater;
+out float hLimit;
 
 // fonctions utiles pour créer des terrains en général
 //Genere un nombre aleatoire
@@ -61,6 +63,10 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
   return n;
 }
 
+  
+float ourComputeHeight(in vec2 p,in float amplitude,in float frequency,in float persistence, in int nboctaves) {
+  return pnoise(p, amplitude, frequency, persistence, nboctaves);
+}
 
 float computeHeight(in vec2 p) {
   
@@ -74,8 +80,10 @@ float computeHeight(in vec2 p) {
   //return 0.2*sin((p.x+motion.x)*30);
 
   //version pnoise
-  return max(pnoise(p, 0.9, 0.7, 0.5, 10),-0.2);
-
+  //return max(pnoise(p+motion.xy, 0.9, 0.7, 0.5, 10),-0.2);
+  //return max(pnoise(p, 0.9, 0.7, 0.5, 10),-0.2);
+  
+  return max(pnoise(p, 0.9, 0.7, 0.5, 10), -0.2);
 }
 
 vec3 computeNormal(in vec2 p) {
@@ -92,15 +100,18 @@ vec3 computeNormal(in vec2 p) {
   return n;
 }
 
+//(MdvMatrix * (position, 1)).xyz //Pour caméra
 void main() {
   //for textures (number of points (more points you have/ more texture you have)):
-  uvcoord = position.xy*100.0;
+  uvcoord = position.xy*10.0;
 
   h = computeHeight(position.xy);
+  hLimit = ourComputeHeight(position.xy, 1.5, 1, 0.8, 10);
+  
   vec3  n = computeNormal(position.xy);
   
   vec3 p = vec3(position.xy,h);
-
+  
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
   eyeView     = normalize((mdvMat*vec4(p,1.0)).xyz);

@@ -68,6 +68,7 @@ class Viewer : public QGLWidget {
 
   // les shaders 
   Shader *_terrainShader;
+  Shader *_waterShader;
   std::vector<std::string> _vertexFilenames;   // all vertex filenames
   std::vector<std::string> _fragmentFilenames; // all fragment filenames
   std::vector<Shader *>    _shaders;           // all the shaders 

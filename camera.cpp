@@ -44,6 +44,8 @@ void Camera::initialize(int w,int h,bool replace) {
     return;
 
   // camera transformations
+  //Possible cam : mdvMat = lookAt(vec3(-1, 0, 1), vec3(1, 0, 0), vec(0, 0, 1))
+  //projMat = persepctive(45, w/h, 0.1, 5)
   _matm = glmToMat4(glm::lookAt(glm::vec3(_c[0],_c[1],_c[2]+tmp2*_r),
 				glm::vec3(_c[0],_c[1],_c[2]),
 				glm::vec3(0.0,1.0,0.0)));

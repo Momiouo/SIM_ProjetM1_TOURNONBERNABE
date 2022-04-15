@@ -44,7 +44,7 @@ Viewer::~Viewer() {
 }
 
 void Viewer::createTextures() {
-  QImage image, texture_neige, texture_eau;
+  QImage image, texture_neige, texture_eau, texture_roche;
 
   // enable the use of 2D textures
   glEnable(GL_TEXTURE_2D);
@@ -100,11 +100,27 @@ void Viewer::createTextures() {
   	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_eau.bits());
   // generate mipmaps
   glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture roche 
+  texture_roche = QGLWidget::convertToGLFormat(QImage("textures/rock_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[3]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_roche.width(),texture_roche.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_roche.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void Viewer::deleteTextures() {
   glDeleteTextures(1,_texIds);
   glDeleteTextures(2,_texIds);
+  glDeleteTextures(3,_texIds);
   glDeleteTextures(3,_texIds);
 }
 
@@ -132,14 +148,18 @@ void Viewer::deleteVAO() {
 
 void Viewer::createShaders() {
   _terrainShader = new Shader();
+  _waterShader = new Shader();
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
+  _waterShader->load("shaders/water.vert","shaders/water.frag");
 
 }
 
 void Viewer::deleteShaders() {
   delete _terrainShader;
+  delete _waterShader;
 
   _terrainShader = NULL;
+  _waterShader = NULL;
 }
 
 void Viewer::reloadShaders() {
@@ -174,6 +194,10 @@ void Viewer::drawScene(GLuint id) {
   glActiveTexture(GL_TEXTURE2);
   glBindTexture(GL_TEXTURE_2D,_texIds[2]);
   glUniform1i(glGetUniformLocation(id,"lakeMap"),2);
+
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D,_texIds[3]);
+  glUniform1i(glGetUniformLocation(id,"rockMap"),3);
 }
 
 /*
@@ -228,12 +252,18 @@ void Viewer::paintGL() {
 
   // activate the buffer shader 
   glUseProgram(_terrainShader->id());
+    
+  // generate the map
+  drawScene(_terrainShader->id());
+
+  // activate the buffer shader 
+  glUseProgram(_waterShader->id());
 
   // tell the GPU to use this specified shader and send custom variables (matrices and others)
   //enableShader(_currentshader);
 
   // generate the map
-  drawScene(_terrainShader->id());
+  drawScene(_waterShader->id());
 
   // disable depth test 
   glDisable(GL_DEPTH_TEST);
@@ -311,9 +341,6 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     _motion[2] -= step;
   }
 
-  
-
-
 
   // key a: play/stop animation
   if(ke->key()==Qt::Key_A) {
@@ -384,6 +411,6 @@ void Viewer::initializeGL() {
   createTextures();
 
   // starts the timer 
-  //_timer->start();
+  _timer->start();
 }
 
