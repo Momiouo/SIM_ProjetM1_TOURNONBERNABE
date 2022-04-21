@@ -8,7 +8,7 @@ using namespace std;
 
 /**
  * Possible Todo : Change the camera ! (TP2 => lookat et perspective fct
- * (les rappelez à chaque rendu si on veut avancer ou ...))
+ * (les rappeler à chaque rendu si on veut avancer ou ...))
  * Virer la trackball de base => terrain sur x-> y -top> -1,0,2 up de la camera = z donc 0,0,1
  * lookat(0,1,2 / 0,1,1 / 0,0,1) = Matrice mdv mat du shader
  * 
@@ -20,6 +20,7 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _currentshader(0),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
+    _automotion(glm::vec2(0,0)),
     _mode(false),
     _ndResol(512) {
 
@@ -166,6 +167,7 @@ void Viewer::deleteShaders() {
 void Viewer::reloadShaders() {
   if(_terrainShader)
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
+    _waterShader->reload("shaders/water.vert","shaders/water.frag");
 }
 
 
@@ -177,6 +179,9 @@ void Viewer::drawScene(GLuint id) {
   glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
+
+  _automotion[0] += 0.1;
+  glUniform3fv(glGetUniformLocation(id,"automotion"),1,&(_automotion[0]));
 
   // draw faces 
   glBindVertexArray(_vaoTerrain);
@@ -353,9 +358,17 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
 
   // key i: init camera
   if(ke->key()==Qt::Key_I) {
-    _cam->initialize(width(),height(),true);
+    //_cam->initialize(width(),height(),true);
   }
   
+  //Camera mouvement
+  if(ke->key()==Qt::Key_Up) {
+    printf("UP");
+    //_cam->initialize(width(),height(),true);
+    _cam->initMoveZ(glm::vec2(0.5,0.5));
+    //_mode = false;
+  }
+
   // // key f: compute FPS
   // if(ke->key()==Qt::Key_F) {
   //   int elapsed;

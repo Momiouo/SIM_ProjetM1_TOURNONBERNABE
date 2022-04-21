@@ -81,6 +81,10 @@ class Viewer : public QGLWidget {
 
   // texture ids
   GLuint _texIds[4];
+
+  //auto anim water
+  glm::vec2 _automotion;
+
 };
 
 #endif // VIEWER_H
