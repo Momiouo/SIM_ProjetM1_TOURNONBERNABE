@@ -85,6 +85,11 @@ class Viewer : public QGLWidget {
   //auto anim water
   glm::vec2 _automotion;
 
+  //my point
+  glm::vec2 _mypoint;
+  float lastX;
+  float lastY;
+
 };
 
 #endif // VIEWER_H

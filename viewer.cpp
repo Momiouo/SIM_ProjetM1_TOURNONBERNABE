@@ -21,7 +21,10 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
     _automotion(glm::vec2(0,0)),
+    _mypoint(glm::vec2(250,250)),//Coordonnée centre de la fenetre
     _mode(false),
+    lastX(0),
+    lastY(0),
     _ndResol(512) {
 
   //_anim = 0; //A METTRE DANS .h
@@ -289,7 +292,9 @@ void Viewer::mousePressEvent(QMouseEvent *me) {
 
   if(me->button()==Qt::LeftButton) {
     _cam->initRotation(p);
-    _mode = false;
+    lastX = p.x;//init first value of click for rotation
+    lastY = p.y;
+    _mode = false;    
   } else if(me->button()==Qt::MidButton) {
     _cam->initMoveZ(p);
     _mode = false;
@@ -316,6 +321,12 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
   } else {
     // camera mode
     _cam->move(p);
+    float xoffset = p.x - lastX;
+    float yoffset = lastY - p.y; 
+    float sensitivity = 0.01f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    _cam->myRotation(p, xoffset, yoffset);
   }
 
   updateGL();
@@ -358,15 +369,21 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
 
   // key i: init camera
   if(ke->key()==Qt::Key_I) {
-    //_cam->initialize(width(),height(),true);
+    _cam->initialize(width(),height(),true);
   }
   
   //Camera mouvement
   if(ke->key()==Qt::Key_Up) {
-    printf("UP");
-    //_cam->initialize(width(),height(),true);
-    _cam->initMoveZ(glm::vec2(0.5,0.5));
-    //_mode = false;
+    _cam->moveZ(true);
+  }
+  if(ke->key()==Qt::Key_Down) {
+    _cam->moveZ(false);
+  }
+  if(ke->key()==Qt::Key_Left) {
+    _cam->moveSide(false);
+  }
+  if(ke->key()==Qt::Key_Right) {
+    _cam->moveSide(true);
   }
 
   // // key f: compute FPS
