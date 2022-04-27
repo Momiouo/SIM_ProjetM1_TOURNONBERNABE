@@ -1,5 +1,6 @@
 #include "camera.h"
 
+
 Camera::Camera(float radius,const glm::vec3 &center,int mode) 
   : _m(NONE),
     _w(0), 
@@ -16,7 +17,7 @@ Camera::Camera(float radius,const glm::vec3 &center,int mode)
     cameraPos(glm::vec3(-1.0f, 0.0f,  2.0f)),
     cameraFront(glm::vec3(1.0f, 0.0f,  -1.7f)),
     cameraUp(glm::vec3(0.0f, 0.0f,  1.0f)),
-    yaw(-90),
+    yaw(0),
     pitch(0),
     _zmax(0) {
 
@@ -36,12 +37,11 @@ void Camera::initialize(int w,int h,bool replace) {
   _w = w;
   _h = h;
   _f = 45.0f;
+  yaw=-90.0f;
+  pitch=30.0f;
   
   // projection transformations  
   if(_d==PERSP) {
-    //Default
-    //_matp = glmToMat4(glm::perspective(_f,(float)_w/(float)_h,_r/tmp1,_r*tmp1));
-    
     _matp = glmToMat4(glm::perspective(_f, (float)_w/(float)_h, 0.1f, 5.0f));
   } else {
     _matp = glmToMat4(glm::ortho((float)(-_w),(float)_w,(float)(-_h),(float)_h,0.0f,_r*100.0f));
@@ -50,34 +50,17 @@ void Camera::initialize(int w,int h,bool replace) {
   if(!replace)
     return;
 
-  // camera transformations
-  //Possible cam : mdvMat = lookAt(vec3(-1, 0, 1), vec3(1, 0, 0), vec(0, 0, 1))
-  //projMat = persepctive(45, w/h, 0.1, 5)
+  //Computation of camera variables
+  cameraPos = glm::vec3(-1.0f, 0.0f,  2.0f);
+  cameraUp = glm::vec3(0.0f, 0.0f,  1.0f);
+  glm::vec3 direction;
+  direction.y = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.x = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(direction);
 
-  //Default cam
-  /*_matm = glmToMat4(glm::lookAt(glm::vec3(_c[0],_c[1],_c[2]+tmp2*_r),
-				glm::vec3(_c[0],_c[1],_c[2]),
-				glm::vec3(0.0,1.0,0.0)));*/
 
-/*
-  glm::vec3 cameraPos = glm::vec3(-1.0f, 0.0f, 2.0f);  
-  glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.3f);
-  glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-  glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f); 
-  glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-  glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
-  
-  _matm = glmToMat4(glm::lookAt(cameraPos,//Position
-				cameraTarget, //Direction
-				cameraUp)); // Up
-*/
-
-cameraPos = glm::vec3(-1.0f, 0.0f,  2.0f);
-cameraFront = glm::vec3(1.0f, 0.0f,  -1.7f);
-cameraUp = glm::vec3(0.0f, 0.0f,  1.0f);
-
-//Walk around camera parameters
+  //We set the position vector/ the direction vection / and the up vector
   _matm = glmToMat4(glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp));
 
   // update params 
@@ -113,26 +96,27 @@ void Camera::moveSide(bool right){
   updateCamDists(_matm);
 }
 
+
 void Camera::myRotation(const glm::vec2 &p, float xoffset, float yoffset){
-    //_p = glmToVec2(p);
+    yaw   += xoffset;//Rotation around y(vertical) axis
+    pitch += yoffset;//Rotation around x(horizontal) axis
 
-    printf("rotation : xoffset %f , yoffset %f",xoffset,yoffset);
-
-    yaw   += yoffset;
-    pitch += xoffset;
+    //Permit to see only above and not below the terrain
     if(pitch > 89.0f)
         pitch = 89.0f;
     if(pitch < -89.0f)
         pitch = -89.0f;
 
     glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = cos(glm::radians(yaw))* cos(glm::radians(pitch));
+    direction.x = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(-96.0f)) * cos(glm::radians(30.0f));
     cameraFront = glm::normalize(direction);
-    //cameraFront = direction;
+
+    printf("YAW = %f , PITCH = %f",yaw,pitch);
+
     //update lookat
-   _matm = glmToMat4(glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp));
+   _matm = glmToMat4(glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp));
     // update params 
     updateCamVectors(_matm);
     updateCamDists(_matm);

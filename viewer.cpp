@@ -386,19 +386,19 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     _cam->moveSide(true);
   }
 
-  // // key f: compute FPS
-  // if(ke->key()==Qt::Key_F) {
-  //   int elapsed;
-  //   QTime timer;
-  //   timer.start();
-  //   unsigned int nb = 500;
-  //   for(unsigned int i=0;i<nb;++i) {
-  //     paintGL();
-  //   }
-  //   elapsed = timer.elapsed();
-  //   double t = (double)nb/((double)elapsed);
-  //   cout << "FPS : " << t*1000.0 << endl;
-  // }
+   // key f: compute FPS
+   if(ke->key()==Qt::Key_F) {
+     int elapsed;
+     QTime timer;
+     timer.start();
+     unsigned int nb = 500;
+     for(unsigned int i=0;i<nb;++i) {
+       paintGL();
+     }
+     elapsed = timer.elapsed();
+     double t = (double)nb/((double)elapsed);
+     cout << "FPS : " << t*1000.0 << endl;
+   }
 
   // key r: reload shaders 
   if(ke->key()==Qt::Key_R) {
