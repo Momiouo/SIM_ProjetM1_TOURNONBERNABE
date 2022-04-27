@@ -1,5 +1,6 @@
-# Projet Synthèse d'images
+# Projet de Synthèse d'images : Création d'un terrain en c++ OpenGL
 ***
+TOURNON Pierre - BERNABE Aurélien - M1 INFO - 2021/2022
 
 ## Screenshot
 ***
