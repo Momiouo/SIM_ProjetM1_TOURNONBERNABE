@@ -6,14 +6,28 @@
 
 using namespace std;
 
+/**
+ * Possible Todo : Change the camera ! (TP2 => lookat et perspective fct
+ * (les rappeler à chaque rendu si on veut avancer ou ...))
+ * Virer la trackball de base => terrain sur x-> y -top> -1,0,2 up de la camera = z donc 0,0,1
+ * lookat(0,1,2 / 0,1,1 / 0,0,1) = Matrice mdv mat du shader
+ * 
+ */
+
 Viewer::Viewer(char *,const QGLFormat &format)
   : QGLWidget(format),
     _timer(new QTimer(this)),
+    _currentshader(0),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
+    _automotion(glm::vec2(0,0)),
+    _mypoint(glm::vec2(250,250)),//Coordonnée centre de la fenetre
     _mode(false),
+    lastX(0),
+    lastY(0),
     _ndResol(512) {
 
+  //_anim = 0; //A METTRE DANS .h
   setlocale(LC_ALL,"C");
 
   _grid = new Grid(_ndResol,-1.0f,1.0f);
@@ -31,6 +45,88 @@ Viewer::~Viewer() {
   // delete all GPU objects
   deleteShaders();
   deleteVAO(); 
+  deleteTextures();
+}
+
+void Viewer::createTextures() {
+  QImage image, texture_neige, texture_eau, texture_roche;
+
+  // enable the use of 2D textures
+  glEnable(GL_TEXTURE_2D);
+
+  // create three textures (possible) on the GPU
+  glGenTextures(4,_texIds);
+
+  // load an image (CPU side)
+  image = QGLWidget::convertToGLFormat(QImage("textures/grass_text.jpg"));
+
+  // activate this texture (the current one)
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+
+  // set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+
+  // transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,image.width(),image.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)image.bits());
+
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture enneigée 
+  texture_neige = QGLWidget::convertToGLFormat(QImage("textures/snow_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_neige.width(),texture_neige.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_neige.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture eau 
+  texture_eau = QGLWidget::convertToGLFormat(QImage("textures/water_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[2]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_eau.width(),texture_eau.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_eau.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  //Texture roche 
+  texture_roche = QGLWidget::convertToGLFormat(QImage("textures/rock_text.jpg")); 
+  //Activation de la texture
+  glBindTexture(GL_TEXTURE_2D,_texIds[3]); 
+  //Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+  //Transfer data from CPU to GPU memory
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA32F,texture_roche.width(),texture_roche.height(),0,
+  	       GL_RGBA,GL_UNSIGNED_BYTE,(const GLvoid *)texture_roche.bits());
+  // generate mipmaps
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+void Viewer::deleteTextures() {
+  glDeleteTextures(1,_texIds);
+  glDeleteTextures(2,_texIds);
+  glDeleteTextures(3,_texIds);
+  glDeleteTextures(3,_texIds);
 }
 
 void Viewer::createVAO() {
@@ -41,9 +137,10 @@ void Viewer::createVAO() {
 
   // create the VBO associated with the grid (the terrain)
   glBindVertexArray(_vaoTerrain);
-  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); // vertices 
+  glBindBuffer(GL_ARRAY_BUFFER,_terrain[0]); //Vertices 
   glBufferData(GL_ARRAY_BUFFER,_grid->nbVertices()*3*sizeof(float),_grid->vertices(),GL_STATIC_DRAW);
   glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void *)0);
+
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,_terrain[1]); // indices 
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,_grid->nbFaces()*3*sizeof(int),_grid->faces(),GL_STATIC_DRAW); 
@@ -56,19 +153,24 @@ void Viewer::deleteVAO() {
 
 void Viewer::createShaders() {
   _terrainShader = new Shader();
-  
+  _waterShader = new Shader();
   _terrainShader->load("shaders/terrain.vert","shaders/terrain.frag");
+  _waterShader->load("shaders/water.vert","shaders/water.frag");
+
 }
 
 void Viewer::deleteShaders() {
   delete _terrainShader;
+  delete _waterShader;
 
   _terrainShader = NULL;
+  _waterShader = NULL;
 }
 
 void Viewer::reloadShaders() {
   if(_terrainShader)
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
+    _waterShader->reload("shaders/water.vert","shaders/water.frag");
 }
 
 
@@ -81,10 +183,69 @@ void Viewer::drawScene(GLuint id) {
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
 
+  _automotion[0] += 0.1;
+  glUniform3fv(glGetUniformLocation(id,"automotion"),1,&(_automotion[0]));
+
   // draw faces 
   glBindVertexArray(_vaoTerrain);
   glDrawElements(GL_TRIANGLES,3*_grid->nbFaces(),GL_UNSIGNED_INT,(void *)0);
   glBindVertexArray(0);
+
+  //draw textures
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+  glUniform1i(glGetUniformLocation(id,"testMap"),0);
+
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]);
+  glUniform1i(glGetUniformLocation(id,"snowMap"),1);
+
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D,_texIds[2]);
+  glUniform1i(glGetUniformLocation(id,"lakeMap"),2);
+
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D,_texIds[3]);
+  glUniform1i(glGetUniformLocation(id,"rockMap"),3);
+}
+
+/*
+void Viewer::enableShader(unsigned int shader) {
+  // current shader ID
+  GLuint id = _shaders[shader]->id();
+
+  // activate the current shader
+  glUseProgram(id);
+
+  // send the model-view matrix
+  glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
+
+  // send the projection matrix
+  glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
+
+  // send the normal matrix (top-left 3x3 transpose(inverse(MDV)))
+  glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
+
+  // send a light direction (defined in camera space)
+  glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
+
+  // send textures
+  /*
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
+  glUniform1i(glGetUniformLocation(id,"testMap"),0);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,_texIds[1]);
+  glUniform1i(glGetUniformLocation(id,"snowMap"),0);
+
+}
+*/
+
+
+void Viewer::disableShader() {
+  // desactivate all shaders
+  glUseProgram(0);
 }
 
 void Viewer::paintGL() {
@@ -100,9 +261,18 @@ void Viewer::paintGL() {
 
   // activate the buffer shader 
   glUseProgram(_terrainShader->id());
-
+    
   // generate the map
   drawScene(_terrainShader->id());
+
+  // activate the buffer shader 
+  glUseProgram(_waterShader->id());
+
+  // tell the GPU to use this specified shader and send custom variables (matrices and others)
+  //enableShader(_currentshader);
+
+  // generate the map
+  drawScene(_waterShader->id());
 
   // disable depth test 
   glDisable(GL_DEPTH_TEST);
@@ -122,7 +292,9 @@ void Viewer::mousePressEvent(QMouseEvent *me) {
 
   if(me->button()==Qt::LeftButton) {
     _cam->initRotation(p);
-    _mode = false;
+    lastX = p.x;//init first value of click for rotation
+    lastY = p.y;
+    _mode = false;    
   } else if(me->button()==Qt::MidButton) {
     _cam->initMoveZ(p);
     _mode = false;
@@ -149,6 +321,12 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
   } else {
     // camera mode
     _cam->move(p);
+    float xoffset = p.x - lastX;
+    float yoffset = lastY - p.y; 
+    float sensitivity = 0.01f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    _cam->myRotation(p, xoffset, yoffset);
   }
 
   updateGL();
@@ -180,9 +358,6 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     _motion[2] -= step;
   }
 
-  
-
-
 
   // key a: play/stop animation
   if(ke->key()==Qt::Key_A) {
@@ -197,19 +372,33 @@ void Viewer::keyPressEvent(QKeyEvent *ke) {
     _cam->initialize(width(),height(),true);
   }
   
-  // // key f: compute FPS
-  // if(ke->key()==Qt::Key_F) {
-  //   int elapsed;
-  //   QTime timer;
-  //   timer.start();
-  //   unsigned int nb = 500;
-  //   for(unsigned int i=0;i<nb;++i) {
-  //     paintGL();
-  //   }
-  //   elapsed = timer.elapsed();
-  //   double t = (double)nb/((double)elapsed);
-  //   cout << "FPS : " << t*1000.0 << endl;
-  // }
+  //Camera mouvement
+  if(ke->key()==Qt::Key_Up) {
+    _cam->moveZ(true);
+  }
+  if(ke->key()==Qt::Key_Down) {
+    _cam->moveZ(false);
+  }
+  if(ke->key()==Qt::Key_Left) {
+    _cam->moveSide(false);
+  }
+  if(ke->key()==Qt::Key_Right) {
+    _cam->moveSide(true);
+  }
+
+   // key f: compute FPS
+   if(ke->key()==Qt::Key_F) {
+     int elapsed;
+     QTime timer;
+     timer.start();
+     unsigned int nb = 500;
+     for(unsigned int i=0;i<nb;++i) {
+       paintGL();
+     }
+     elapsed = timer.elapsed();
+     double t = (double)nb/((double)elapsed);
+     cout << "FPS : " << t*1000.0 << endl;
+   }
 
   // key r: reload shaders 
   if(ke->key()==Qt::Key_R) {
@@ -241,10 +430,18 @@ void Viewer::initializeGL() {
   // init shaders 
   createShaders();
 
+  // init and load all shader files
+  //for(unsigned int i=0;i<_vertexFilenames.size();++i) {
+  //  _shaders.push_back(new Shader());
+  //  _shaders[i]->load(_vertexFilenames[i].c_str(),_fragmentFilenames[i].c_str());
+  //}
+
   // init VAO/VBO
   createVAO();
+  //Create the textures
+  createTextures();
 
   // starts the timer 
-  //_timer->start();
+  _timer->start();
 }
 

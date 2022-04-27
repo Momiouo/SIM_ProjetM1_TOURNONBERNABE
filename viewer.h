@@ -44,13 +44,20 @@ class Viewer : public QGLWidget {
   void deleteVAO();
 
   void createShaders();
+  void enableShader(unsigned int shader=0);
+  void disableShader();
   void deleteShaders();
   void reloadShaders();
   
   // drawing functions 
   void drawScene(GLuint id);
 
+  // textures functions
+  void createTextures();
+  void deleteTextures();
+
   QTimer        *_timer;    // timer that controls the animation
+  unsigned int   _currentshader; // current shader index
 
   Grid   *_grid;   // the grid
   Camera *_cam;    // the camera
@@ -61,12 +68,28 @@ class Viewer : public QGLWidget {
 
   // les shaders 
   Shader *_terrainShader;
-  
+  Shader *_waterShader;
+  std::vector<std::string> _vertexFilenames;   // all vertex filenames
+  std::vector<std::string> _fragmentFilenames; // all fragment filenames
+  std::vector<Shader *>    _shaders;           // all the shaders 
+
   // vbo/vao ids 
   GLuint _vaoTerrain;
   GLuint _terrain[2];
 
   unsigned int _ndResol;
+
+  // texture ids
+  GLuint _texIds[4];
+
+  //auto anim water
+  glm::vec2 _automotion;
+
+  //my point
+  glm::vec2 _mypoint;
+  float lastX;
+  float lastY;
+
 };
 
 #endif // VIEWER_H
