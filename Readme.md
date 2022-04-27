@@ -10,8 +10,8 @@ TOURNON Pierre - BERNABE Aurélien - M1 INFO - 2021/2022
 ***
 ```
 $ git clone https://github.com/Momiouo/SIM_ProjetM1.git
-$ cd ../SIM_PROJETM1
-$ qmake & make
+$ cd /SIM_PROJETM1
+$ qmake && make
 $ ./terrain
 ```
 
