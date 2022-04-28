@@ -2,6 +2,10 @@
 
 // input attributes 
 layout(location = 0) in vec3 position; 
+//Shadow Mapping
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 tangent;
+layout(location = 3) in vec2 coord;
 
 // input uniforms send by drawscene function in viewercpp
 uniform mat4 mdvMat;      // modelview matrix 
@@ -9,6 +13,8 @@ uniform mat4 projMat;     // projection matrix
 uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
+//Shadow Mapping
+uniform mat4 mvpDepthMat;
 
 // out variables 
 out vec3 normalView;
@@ -18,6 +24,9 @@ out vec2 uvcoord;
 out float h;
 out float hWater;
 out float hLimit;
+//Shadow mapping
+out vec4 shadcoord;
+out vec3 tangentView;
 
 // fonctions utiles pour créer des terrains en général
 //Genere un nombre aleatoire
@@ -115,4 +124,8 @@ void main() {
   gl_Position =  projMat*mdvMat*vec4(p,1);
   normalView  = normalize(normalMat*n);
   eyeView     = normalize((mdvMat*vec4(p,1.0)).xyz);
+
+  //Shadow mapping
+  tangentView = normalize(normalMat*tangent);
+  shadcoord   = (mvpDepthMat*vec4(position,1.0))*0.5+vec4(0.5);
 }

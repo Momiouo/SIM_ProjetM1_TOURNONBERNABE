@@ -24,6 +24,8 @@
 #include "camera.h"
 #include "shader.h"
 #include "grid.h"
+#include "meshLoader.h"
+
 
 class Viewer : public QGLWidget {
  public:
@@ -42,7 +44,9 @@ class Viewer : public QGLWidget {
   // OpenGL objects creation
   void createVAO();
   void deleteVAO();
-
+  void createFBO();
+  void deleteFBO();
+  void drawSceneFromLight(GLuint id);
   void createShaders();
   void enableShader(unsigned int shader=0);
   void disableShader();
@@ -60,6 +64,7 @@ class Viewer : public QGLWidget {
   unsigned int   _currentshader; // current shader index
 
   Grid   *_grid;   // the grid
+  Mesh   *_mesh;   // the mesh (normal mapping)
   Camera *_cam;    // the camera
 
   glm::vec3 _light;  // light direction
@@ -69,6 +74,7 @@ class Viewer : public QGLWidget {
   // les shaders 
   Shader *_terrainShader;
   Shader *_waterShader;
+  Shader *_shadowMapShader;
   std::vector<std::string> _vertexFilenames;   // all vertex filenames
   std::vector<std::string> _fragmentFilenames; // all fragment filenames
   std::vector<Shader *>    _shaders;           // all the shaders 
@@ -76,19 +82,25 @@ class Viewer : public QGLWidget {
   // vbo/vao ids 
   GLuint _vaoTerrain;
   GLuint _terrain[2];
+  //Shadow Mapping
+  GLuint _texDepth;
+   // fbo id
+  GLuint _fbo;
+
 
   unsigned int _ndResol;
 
   // texture ids
-  GLuint _texIds[4];
+  GLuint _texIds[8];
 
   //auto anim water
-  glm::vec2 _automotion;
+  glm::vec3 _automotion;
 
   //my point
-  glm::vec2 _mypoint;
   float lastX;
   float lastY;
+  
+  unsigned int _depthResol;
 
 };
 

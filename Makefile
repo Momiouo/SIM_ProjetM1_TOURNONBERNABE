@@ -54,11 +54,13 @@ OBJECTS_DIR   = ./
 
 SOURCES       = shader.cpp \
 		grid.cpp \
+		trackball.cpp \
 		camera.cpp \
 		viewer.cpp \
 		main.cpp 
 OBJECTS       = shader.o \
 		grid.o \
+		trackball.o \
 		camera.o \
 		viewer.o \
 		main.o
@@ -139,9 +141,11 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		main.pro shader.h \
 		grid.h \
+		trackball.h \
 		camera.h \
 		viewer.h shader.cpp \
 		grid.cpp \
+		trackball.cpp \
 		camera.cpp \
 		viewer.cpp \
 		main.cpp
@@ -324,8 +328,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents shader.h grid.h camera.h viewer.h $(DISTDIR)/
-	$(COPY_FILE) --parents shader.cpp grid.cpp camera.cpp viewer.cpp main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents shader.h grid.h trackball.h camera.h viewer.h $(DISTDIR)/
+	$(COPY_FILE) --parents shader.cpp grid.cpp trackball.cpp camera.cpp viewer.cpp main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -380,6 +384,15 @@ shader.o: shader.cpp shader.h
 
 grid.o: grid.cpp grid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o grid.o grid.cpp
+
+trackball.o: trackball.cpp trackball.h \
+		vec2.h \
+		vec3.h \
+		quat.h \
+		mat3.h \
+		mat4.h \
+		vec4.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o trackball.o trackball.cpp
 
 camera.o: camera.cpp camera.h \
 		quat.h \

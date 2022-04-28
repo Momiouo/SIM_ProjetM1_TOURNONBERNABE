@@ -4,7 +4,7 @@ TOURNON Pierre - BERNABE Aurélien - M1 INFO - 2021/2022
 
 ## Screenshot
 ***
-![Image text](screenshot.png)
+![Screenshot 1 Terrain](screenshot.png)
 
 ## Installation 
 ***
@@ -38,14 +38,14 @@ Todo: Appuyer sur A pour démarrer/stopper l'animation de l'eau.
 ## Description de l'état de notre projet ⚒️
 ***
 ### Effectué
--Application de textures</br>
--Utilisation du bruit de perlin</br>
--Creation d'une caméra
+* Application de textures</br>
+* Utilisation du bruit de perlin</br>
+* Creation d'une caméra
 
 ### Reste à faire 
--Post Processing (Fog)</br>
--Une meilleure camera car limité lorsque l'on souhaite se retourner (ne fonctionne pas)</br>
--shadow maping
+* Post Processing (Fog)</br>
+* Une meilleure camera car limité lorsque l'on souhaite se retourner (ne fonctionne pas)</br>
+* shadow maping
 
 ## Ressources utilisées 📚
 ***
