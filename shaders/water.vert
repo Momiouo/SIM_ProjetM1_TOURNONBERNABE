@@ -74,8 +74,9 @@ vec3 computeNormal(in vec2 p) {
   return n;
 }
 
+//Shader représentant l'eau. Il est animé automatiquement avec la variable automotion.
 void main() {
-  uvcoord = position.xy*1000.0;
+  uvcoord = position.xy*200.0;
 
   h = computeHeight(position.xy);
   

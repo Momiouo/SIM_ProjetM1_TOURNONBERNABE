@@ -16,7 +16,6 @@ Viewer::Viewer(char *,const QGLFormat &format)
     _mode(false),
     _ndResol(512) {
 
-  //_anim = 0; //A METTRE DANS .h
   setlocale(LC_ALL,"C");
 
   _grid = new Grid(_ndResol,-1.0f,1.0f);

@@ -20,6 +20,7 @@ uniform sampler2D lakeMap;
 
 void main() {
 
+//Application de la texture du lac sur l'entièreté des coordonnées uv.
     vec4 texColor = texture(lakeMap,uvcoord);
     vec4 texspec = texture(lakeMap,uvcoord);
     vec4 texao = texture(lakeMap,uvcoord);

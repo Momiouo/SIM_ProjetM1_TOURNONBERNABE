@@ -36,7 +36,7 @@ Clique bouton milieu = Zoom ou Dézoom
 
 ### Animation 🎥
 ***
-Todo: Appuyer sur A pour démarrer/stopper l'animation de l'eau.
+L'animation de l'eau se fait automatiquement, à chaque fois que drawscene est appelée.
 
 ## Description de l'état de notre projet ⚒️
 ***

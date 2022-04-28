@@ -19,6 +19,7 @@ layout(location = 0) out vec4 bufferColor;
 //textures variables
 uniform sampler2D testMap, snowMap, lakeMap, rockMap, specularmap, aomap;
 
+//Shader représentant le terrain. On applique des textures en fonction de la hauteur du terrain.
 void main() {
 
   //Textures
