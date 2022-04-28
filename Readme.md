@@ -20,16 +20,19 @@ $ ./terrain
 ### Camera 
 ***
 #### Touche clavier ⌨️
-flèche du haut ⬆️ = Zoom avant</br>
-flèche du bas ⬇️ = Zoom arrière</br>
+flèche du haut ⬆️ = déplacement en haut</br>
+flèche du bas ⬇️ = déplacement en bas</br>
 flèche de droite ➡️ = déplacement à droite</br>
-flèche de gauche ⬅️ = déplacement à gauche
+flèche de gauche ⬅️ = déplacement à gauche</br>
+Touche Z = Zoom </br>
+Touche S = Dézoom
 
 #### Souris 🖱️
 Drag vers le bas  = rotation vers le haut</br>
 Drag vers la haut = rotation vers le bas</br>
 Drag vers la droite = rotation vers la gauche</br>
-Drag vers la gauche = rotation vers la droite
+Drag vers la gauche = rotation vers la droite</br>
+Clique bouton milieu = Zoom ou Dézoom 
 
 ### Animation 🎥
 ***
@@ -38,14 +41,14 @@ Todo: Appuyer sur A pour démarrer/stopper l'animation de l'eau.
 ## Description de l'état de notre projet ⚒️
 ***
 ### Effectué
--Application de textures</br>
--Utilisation du bruit de perlin</br>
--Creation d'une caméra
+* Application de textures</br>
+* Utilisation du bruit de perlin</br>
+* Creation d'une caméra
 
 ### Reste à faire 
--Post Processing (Fog)</br>
--Une meilleure camera car limité lorsque l'on souhaite se retourner (ne fonctionne pas)</br>
--shadow maping
+* Post Processing (Fog)</br>
+* Une meilleure camera car limité lorsque l'on souhaite se retourner (ne fonctionne pas)</br>
+* shadow maping
 
 ## Ressources utilisées 📚
 ***

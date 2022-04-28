@@ -27,7 +27,7 @@ int main(int argc,char** argv) {
   
   Viewer viewer(getFilename(argc,argv),fmt);
 
-  viewer.setWindowTitle("Exercice 09 - Terrain rendering");
+  viewer.setWindowTitle("Projet SIM M1 INFO - BERNABE & TOURNON");
   viewer.show();
   
   return application.exec();

@@ -6,25 +6,14 @@
 
 using namespace std;
 
-/**
- * Possible Todo : Change the camera ! (TP2 => lookat et perspective fct
- * (les rappeler à chaque rendu si on veut avancer ou ...))
- * Virer la trackball de base => terrain sur x-> y -top> -1,0,2 up de la camera = z donc 0,0,1
- * lookat(0,1,2 / 0,1,1 / 0,0,1) = Matrice mdv mat du shader
- * 
- */
-
 Viewer::Viewer(char *,const QGLFormat &format)
   : QGLWidget(format),
     _timer(new QTimer(this)),
     _currentshader(0),
     _light(glm::vec3(0,0,1)),
     _motion(glm::vec3(0,0,0)),
-    _automotion(glm::vec2(0,0)),
-    _mypoint(glm::vec2(250,250)),//Coordonnée centre de la fenetre
+    _automotion(glm::vec3(0,0,0)),
     _mode(false),
-    lastX(0),
-    lastY(0),
     _ndResol(512) {
 
   //_anim = 0; //A METTRE DANS .h
@@ -183,7 +172,7 @@ void Viewer::drawScene(GLuint id) {
   glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
   glUniform3fv(glGetUniformLocation(id,"motion"),1,&(_motion[0]));
 
-  _automotion[0] += 0.1;
+  _automotion[0] += 0.0001f;
   glUniform3fv(glGetUniformLocation(id,"automotion"),1,&(_automotion[0]));
 
   // draw faces 
@@ -209,44 +198,6 @@ void Viewer::drawScene(GLuint id) {
   glUniform1i(glGetUniformLocation(id,"rockMap"),3);
 }
 
-/*
-void Viewer::enableShader(unsigned int shader) {
-  // current shader ID
-  GLuint id = _shaders[shader]->id();
-
-  // activate the current shader
-  glUseProgram(id);
-
-  // send the model-view matrix
-  glUniformMatrix4fv(glGetUniformLocation(id,"mdvMat"),1,GL_FALSE,&(_cam->mdvMatrix()[0][0]));
-
-  // send the projection matrix
-  glUniformMatrix4fv(glGetUniformLocation(id,"projMat"),1,GL_FALSE,&(_cam->projMatrix()[0][0]));
-
-  // send the normal matrix (top-left 3x3 transpose(inverse(MDV)))
-  glUniformMatrix3fv(glGetUniformLocation(id,"normalMat"),1,GL_FALSE,&(_cam->normalMatrix()[0][0]));
-
-  // send a light direction (defined in camera space)
-  glUniform3fv(glGetUniformLocation(id,"light"),1,&(_light[0]));
-
-  // send textures
-  /*
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,_texIds[0]);
-  glUniform1i(glGetUniformLocation(id,"testMap"),0);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,_texIds[1]);
-  glUniform1i(glGetUniformLocation(id,"snowMap"),0);
-
-}
-*/
-
-
-void Viewer::disableShader() {
-  // desactivate all shaders
-  glUseProgram(0);
-}
 
 void Viewer::paintGL() {
   
@@ -267,9 +218,6 @@ void Viewer::paintGL() {
 
   // activate the buffer shader 
   glUseProgram(_waterShader->id());
-
-  // tell the GPU to use this specified shader and send custom variables (matrices and others)
-  //enableShader(_currentshader);
 
   // generate the map
   drawScene(_waterShader->id());
@@ -292,8 +240,6 @@ void Viewer::mousePressEvent(QMouseEvent *me) {
 
   if(me->button()==Qt::LeftButton) {
     _cam->initRotation(p);
-    lastX = p.x;//init first value of click for rotation
-    lastY = p.y;
     _mode = false;    
   } else if(me->button()==Qt::MidButton) {
     _cam->initMoveZ(p);
@@ -321,69 +267,42 @@ void Viewer::mouseMoveEvent(QMouseEvent *me) {
   } else {
     // camera mode
     _cam->move(p);
-    float xoffset = p.x - lastX;
-    float yoffset = lastY - p.y; 
-    float sensitivity = 0.01f;
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-    _cam->myRotation(p, xoffset, yoffset);
   }
 
   updateGL();
 }
 
 void Viewer::keyPressEvent(QKeyEvent *ke) {
-  const float step = 0.05;
-  if(ke->key()==Qt::Key_Z) {
-    glm::vec2 v = glm::vec2(glm::transpose(_cam->normalMatrix())*glm::vec3(0,0,-1))*step;
-    if(v[0]!=0.0 && v[1]!=0.0) v = glm::normalize(v)*step;
-    else v = glm::vec2(0,1)*step;
-    _motion[0] += v[0];
-    _motion[1] += v[1];
-  }
-
-  if(ke->key()==Qt::Key_S) {
-    glm::vec2 v = glm::vec2(glm::transpose(_cam->normalMatrix())*glm::vec3(0,0,-1))*step;
-    if(v[0]!=0.0 && v[1]!=0.0) v = glm::normalize(v)*step;
-    else v = glm::vec2(0,1)*step;
-    _motion[0] -= v[0];
-    _motion[1] -= v[1];
-  }
-
-  if(ke->key()==Qt::Key_Q) {
-    _motion[2] += step;
-  }
-
-  if(ke->key()==Qt::Key_D) {
-    _motion[2] -= step;
-  }
-
-
-  // key a: play/stop animation
-  if(ke->key()==Qt::Key_A) {
-    if(_timer->isActive()) 
-      _timer->stop();
-    else 
-      _timer->start();
-  }
 
   // key i: init camera
   if(ke->key()==Qt::Key_I) {
     _cam->initialize(width(),height(),true);
   }
   
-  //Camera mouvement
-  if(ke->key()==Qt::Key_Up) {
+  //New Camera mouvement
+  if(ke->key()==Qt::Key_Z) {
     _cam->moveZ(true);
   }
-  if(ke->key()==Qt::Key_Down) {
+  if(ke->key()==Qt::Key_S) {
     _cam->moveZ(false);
+  }
+  if(ke->key()==Qt::Key_Up) {
+    _cam->moveHeight(true);
+  }
+  if(ke->key()==Qt::Key_Down) {
+    _cam->moveHeight(false);
   }
   if(ke->key()==Qt::Key_Left) {
     _cam->moveSide(false);
   }
   if(ke->key()==Qt::Key_Right) {
     _cam->moveSide(true);
+  }
+  if(ke->key()==Qt::Key_A) {
+    //_cam->rotateSide(false); //doesn't work at all
+  }
+  if(ke->key()==Qt::Key_E) {
+    //_cam->rotateSide(true); //doesn't work at all
   }
 
    // key f: compute FPS
@@ -429,12 +348,6 @@ void Viewer::initializeGL() {
 
   // init shaders 
   createShaders();
-
-  // init and load all shader files
-  //for(unsigned int i=0;i<_vertexFilenames.size();++i) {
-  //  _shaders.push_back(new Shader());
-  //  _shaders[i]->load(_vertexFilenames[i].c_str(),_fragmentFilenames[i].c_str());
-  //}
 
   // init VAO/VBO
   createVAO();

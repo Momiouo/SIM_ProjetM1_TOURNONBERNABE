@@ -9,7 +9,7 @@ uniform mat4 projMat;     // projection matrix
 uniform mat3 normalMat;   // normal matrix
 uniform vec3 light;
 uniform vec3 motion;
-uniform vec2 automotion;
+uniform vec3 automotion;
 
 // out variables 
 out vec3 normalView;
@@ -56,21 +56,8 @@ float pnoise(in vec2 p,in float amplitude,in float frequency,in float persistenc
 
   
 float computeHeight(in vec2 p) {
-  
-  // version plan
-  //return 0.0;
-  
-  // version sinus statique
-  //return 0.5*sin(p.x*10);
-
-  // version sinus animé 
-  //return 0.01*sin((p.x+motion.x)*60)-0.2;
-
-  //version pnoise
-  return pnoise(p+automotion.x, 0.01, 0.1, 0.9, 20)-0.17;
-  //return max(pnoise(p, 0.9, 0.7, 0.5, 10),-0.2);
-  
-  //return max(pnoise(p, 0.9, 0.7, 0.5, 10), -0.2);
+  //version pnoise animée
+  return pnoise(p+automotion[0], 0.01, 0.1, 0.9, 20)-0.14;
 }
 
 vec3 computeNormal(in vec2 p) {

@@ -37,7 +37,7 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = terrain1.0.0
-DISTDIR = /mnt/c/Users/aurel/Desktop/M1/S2/SIM/PROJET_GIT/SIM_ProjetM1/.tmp/terrain1.0.0
+DISTDIR = /mnt/c/Users/aurel/Desktop/M1/S2/SIM/PROJET_GIT/projet_rescue/SIM_ProjetM1_TOURNONBERNABE/.tmp/terrain1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1
 LIBS          = $(SUBLIBS) -lGLEW -lGL -lGLU -lm -lpthread /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libQt5OpenGL.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Xml.so /usr/lib/x86_64-linux-gnu/libQt5Core.so   
@@ -54,11 +54,13 @@ OBJECTS_DIR   = ./
 
 SOURCES       = shader.cpp \
 		grid.cpp \
+		trackball.cpp \
 		camera.cpp \
 		viewer.cpp \
 		main.cpp 
 OBJECTS       = shader.o \
 		grid.o \
+		trackball.o \
 		camera.o \
 		viewer.o \
 		main.o
@@ -139,9 +141,11 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		main.pro shader.h \
 		grid.h \
+		trackball.h \
 		camera.h \
 		viewer.h shader.cpp \
 		grid.cpp \
+		trackball.cpp \
 		camera.cpp \
 		viewer.cpp \
 		main.cpp
@@ -324,8 +328,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents shader.h grid.h camera.h viewer.h $(DISTDIR)/
-	$(COPY_FILE) --parents shader.cpp grid.cpp camera.cpp viewer.cpp main.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents shader.h grid.h trackball.h camera.h viewer.h $(DISTDIR)/
+	$(COPY_FILE) --parents shader.cpp grid.cpp trackball.cpp camera.cpp viewer.cpp main.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -381,35 +385,47 @@ shader.o: shader.cpp shader.h
 grid.o: grid.cpp grid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o grid.o grid.cpp
 
-camera.o: camera.cpp camera.h \
-		quat.h \
+trackball.o: trackball.cpp trackball.h \
+		vec2.h \
 		vec3.h \
+		quat.h \
 		mat3.h \
 		mat4.h \
-		vec4.h \
-		vec2.h
+		vec4.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o trackball.o trackball.cpp
+
+camera.o: camera.cpp camera.h \
+		trackball.h \
+		vec2.h \
+		vec3.h \
+		quat.h \
+		mat3.h \
+		mat4.h \
+		vec4.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o camera.o camera.cpp
 
 viewer.o: viewer.cpp viewer.h \
 		camera.h \
-		quat.h \
+		trackball.h \
+		vec2.h \
 		vec3.h \
+		quat.h \
 		mat3.h \
 		mat4.h \
 		vec4.h \
-		vec2.h \
 		shader.h \
 		grid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o viewer.o viewer.cpp
 
 main.o: main.cpp viewer.h \
 		camera.h \
-		quat.h \
+		trackball.h \
+		vec2.h \
 		vec3.h \
+		quat.h \
 		mat3.h \
 		mat4.h \
 		vec4.h \
-		vec2.h \
 		shader.h \
 		grid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp

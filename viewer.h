@@ -83,12 +83,7 @@ class Viewer : public QGLWidget {
   GLuint _texIds[4];
 
   //auto anim water
-  glm::vec2 _automotion;
-
-  //my point
-  glm::vec2 _mypoint;
-  float lastX;
-  float lastY;
+  glm::vec3 _automotion;
 
 };
 

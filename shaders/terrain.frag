@@ -21,24 +21,6 @@ uniform sampler2D testMap, snowMap, lakeMap, rockMap, specularmap, aomap;
 
 void main() {
 
-  /* base version
-  const vec3 ambient  = vec3(0.3,0.3,0.2);
-    const vec3 diffuse  = vec3(0.3,0.5,0.8);
-    const vec3 specular = vec3(0.8,0.2,0.2);
-    const float et = 50.0;
-
-    vec3 n = normalize(normalView);
-    vec3 e = normalize(eyeView);
-    vec3 l = normalize(light);
-
-    float diff = dot(l,n);
-    float spec = pow(max(dot(reflect(l,n),e),0.0),et);
-
-    vec3 color = ambient + diff*diffuse + spec*specular;
-
-    bufferColor = vec4(color,1.0);
-  */
-
   //Textures
   if(h > (1-hLimit)) { //Draw snow
     vec4 texColor = texture(snowMap,uvcoord);

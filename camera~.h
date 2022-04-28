@@ -1,7 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "trackball.h"
 #include "quat.h"
 #include "vec2.h"
 #include "vec3.h"
@@ -27,10 +26,11 @@ class Camera {
   void setFovy(float f);
   void setMode(int m);
 
-  //Functions for our camera movement
+  //My function for walkaround movement
   void moveZ(bool forward);
   void moveSide(bool right);
-  void moveHeight(bool up);
+  void myRotation(const glm::vec2 &p, float xoffset, float yoffset);
+
 
   inline void initRotation(const glm::vec2 &p);
   inline void initMoveXY(const glm::vec2 &p);
@@ -80,15 +80,16 @@ class Camera {
   Vec2f     _p; // departure point when moving 
   Vec3f     _c; // center 
   float     _r; // radius
-  TrackBall _t; // trackball
   float     _f; // fovy
   Vec4i     _v; // viewport
   int       _d; // mode (persp or ortho)
 
-  //my var for new cam
+  //my var for walk around cam
   glm::vec3 cameraPos;
   glm::vec3 cameraFront;
   glm::vec3 cameraUp;
+  float yaw;
+  float pitch;
 
   Vec3f     _up;
   Vec3f     _right;
@@ -137,7 +138,6 @@ inline Mat4f Camera::glmToMat4(const glm::mat4 &m) const {
 inline void Camera::initRotation(const glm::vec2 &p) {
   _m = ROTATE;
   _p = glmToVec2(p);
-  _t.beginTracking(_p);
 }
 
 inline void Camera::initMoveXY(const glm::vec2 &p) {
@@ -160,21 +160,17 @@ inline void Camera::move(const glm::vec2 &p) {
 }
 
 inline void Camera::rotate(const Vec2f &p) {
-  Mat4f mo = _matm;
+  /*Mat4f mo = _matm;
   
   // compute rotation matrix 
   const Vec3f tr = Vec3f(mo[12],mo[13],mo[14]);
   const Mat4f t1 = Mat4f::identity().translateEq(-tr);
   const Mat4f t2 = Mat4f::identity().translateEq(tr);
-  const Mat4f mr = _t.track(p).toMat4(); 
   
-  _matm = t2*mr*t1*mo;
+  _matm = t2*t1*mo;
 
   // update params
-  _p = p;
-  _t.beginTracking(_p);
-  updateCamVectors(_matm);
-  updateCamDists(_matm);
+  _p = p;*/ 
 }
 
 inline void Camera::moveXY(const Vec2f &p) {
