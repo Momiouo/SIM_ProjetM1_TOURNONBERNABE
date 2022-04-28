@@ -158,6 +158,7 @@ void Viewer::deleteShaders() {
 void Viewer::reloadShaders() {
   if(_terrainShader)
     _terrainShader->reload("shaders/terrain.vert","shaders/terrain.frag");
+  if(_waterShader)
     _waterShader->reload("shaders/water.vert","shaders/water.frag");
 }
 

@@ -23,7 +23,6 @@ Camera::Camera(float radius,const glm::vec3 &center,int mode)
 
 void Camera::initialize(int w,int h,bool replace) {
   const float tmp1 = 100.0f;
-  const float tmp2 = 3.0f;
 
   int wo2 = w/2;
   int ho2 = h/2;
